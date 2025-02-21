@@ -1,4 +1,4 @@
-// main.go - Entry point
+
 package main
 
 import (

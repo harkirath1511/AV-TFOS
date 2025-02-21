@@ -70,7 +70,12 @@ func (s *Server) handleWebSocket(c *gin.Context) {
 
 	// Subscribe to traffic updates
 	sub, _ := s.nc.Subscribe("trafficlight.*", func(m *nats.Msg) {
-		ws.WriteMessage(websocket.TextMessage, m.Data)
+		// Add logging before sending the message
+		log.Printf("WebSocket sending data: %s", string(m.Data))
+
+		if err := ws.WriteMessage(websocket.TextMessage, m.Data); err != nil {
+			log.Printf("WebSocket write error: %v", err)
+		}
 	})
 
 	defer sub.Unsubscribe()
@@ -78,6 +83,7 @@ func (s *Server) handleWebSocket(c *gin.Context) {
 	// Keep connection alive
 	for {
 		if _, _, err := ws.NextReader(); err != nil {
+			log.Printf("WebSocket connection closed: %v", err)
 			break
 		}
 	}

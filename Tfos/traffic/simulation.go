@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
 	"time"
 
@@ -15,19 +16,37 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+// Update the SimulationConfig struct
 type SimulationConfig struct {
-	VehicleCount    int           `json:"vehicle_count"`
-	AVPercentage    float64       `json:"av_percentage"`
-	UpdateFrequency time.Duration `json:"update_freq"`
+	VehicleCount      int     `json:"vehicle_count"`
+	AVPercentage      float64 `json:"av_percentage"`
+	EmergencyInterval string  `json:"emergency_interval"`
+	UpdateFrequency   string  `json:"update_freq,omitempty"` // New field
 }
 
+// Modify the RunSimulationEngine function
 func RunSimulationEngine(ctx context.Context) {
 	nc, _ := nats.Connect(nats.DefaultURL)
 	defer nc.Close()
 
 	sub, _ := nc.Subscribe("simulation.control", func(m *nats.Msg) {
 		var config SimulationConfig
-		json.Unmarshal(m.Data, &config)
+		if err := json.Unmarshal(m.Data, &config); err != nil {
+			log.Printf("Error parsing simulation config: %v", err)
+			return
+		}
+
+		// Set default values if not provided
+		if config.VehicleCount == 0 {
+			config.VehicleCount = 500
+		}
+		if config.AVPercentage == 0 {
+			config.AVPercentage = 0.2
+		}
+		if config.UpdateFrequency == "" {
+			config.UpdateFrequency = "1s" // Default update frequency
+		}
+
 		go runSimulation(ctx, config)
 	})
 
@@ -35,8 +54,15 @@ func RunSimulationEngine(ctx context.Context) {
 	sub.Unsubscribe()
 }
 
+// Update the runSimulation function
 func runSimulation(ctx context.Context, config SimulationConfig) {
-	ticker := time.NewTicker(config.UpdateFrequency)
+	// Parse update frequency
+	updateFreq, err := time.ParseDuration(config.UpdateFrequency)
+	if err != nil {
+		updateFreq = 1 * time.Second // fallback to default if parsing fails
+	}
+
+	ticker := time.NewTicker(updateFreq)
 	defer ticker.Stop()
 
 	for i := 0; i < config.VehicleCount; i++ {
