@@ -10,6 +10,27 @@ import { useTrafficStore } from "../stores/trafficStore.js";
 import { connectWebSocket } from "../utils/websocket";
 import React from "react";
 
+function Scene() {
+  return (
+    <>
+      <ambientLight intensity={0.5} />
+      <OrbitControls />
+      <mesh>
+        <CityMap />
+      </mesh>
+      <mesh>
+        <Vehicle />
+      </mesh>
+      <mesh>
+        <Emergency />
+      </mesh>
+      <mesh>
+        <TrafficLight />
+      </mesh>
+    </>
+  );
+}
+
 function Home() {
   const { setTrafficData } = useTrafficStore();
   const [socket, setSocket] = useState(null);
@@ -23,14 +44,14 @@ function Home() {
   return (
     <div className="h-screen w-screen flex flex-col">
       <ControlPanel socket={socket} />
-      <Canvas className="flex-grow">
-        <ambientLight intensity={0.5} />
-        <OrbitControls />
-        <CityMap />
-        <Vehicle />
-        <Emergency />
-        <TrafficLight />
-      </Canvas>
+      <div className="flex-grow">
+<Canvas
+  camera={{ position: [10, 10, 10], fov: 75 }}
+  gl={{ antialias: true }}
+>
+  <Scene />
+</Canvas>
+      </div>
     </div>
   );
 }

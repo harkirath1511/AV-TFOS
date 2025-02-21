@@ -1,47 +1,52 @@
-import { useGLTF, useAnimations } from '@react-three/drei'
+import React from 'react'
 import { useFrame } from '@react-three/fiber'
-import { useTrafficStore } from "../stores/trafficStore.js";
-import { a, useSpring } from '@react-spring/three'
-import React from 'react';
+import * as THREE from 'three'
 
- function Vehicles() {
-  const { nodes, materials, animations } = useGLTF('/assets/vehicle.glb')
-  const vehicles = useTrafficStore(state => state.vehicles)
-
-  return vehicles.map(vehicle => (
-    <Vehicle key={vehicle.id} {...vehicle} />
-  ))
-}
-
-function Vehicle({ id, position, speed, type }) {
-  const { scene, animations } = useGLTF(type === 'emergency' 
-    ? '/assets/ambulance.glb' 
-    : '/assets/car.glb'
-  )
-  const { actions } = useAnimations(animations, scene)
-  const [spring] = useSpring(() => ({
-    position: [position[0] * 1000, 0, position[1] * 1000],
-    rotation: [0, Math.PI, 0],
-    config: { mass: 1, tension: 500, friction: 40 }
-  }), [position])
+function Vehicle() {
+  const meshRef = React.useRef()
 
   useFrame(() => {
-    actions?.Drive?.setEffectiveTimeScale(speed / 50)
+    if (meshRef.current) {
+      meshRef.current.rotation.y += 0.01
+    }
   })
 
   return (
-    <a.group {...spring}>
-      <primitive 
-        object={scene} 
-        scale={type === 'emergency' ? 0.8 : 0.5}
-      />
-      <meshStandardMaterial 
-        color={type === 'emergency' ? '#ff2222' : '#44aaff'}
-        emissive={type === 'emergency' ? '#ff4444' : '#2266ff'}
-        emissiveIntensity={1.2}
-      />
-    </a.group>
+    <mesh ref={meshRef}>
+      {/* Simple car shape using box geometry */}
+      <group>
+        {/* Car body */}
+        <mesh position={[0, 0.5, 0]}>
+          <boxGeometry args={[2, 1, 4]} />
+          <meshStandardMaterial color="#4287f5" />
+        </mesh>
+        
+        {/* Car roof */}
+        <mesh position={[0, 1.25, 0]}>
+          <boxGeometry args={[1.5, 0.75, 2]} />
+          <meshStandardMaterial color="#2961c4" />
+        </mesh>
+
+        {/* Wheels */}
+        <mesh position={[-1, 0, 1]}>
+          <cylinderGeometry args={[0.4, 0.4, 0.3]} rotation={[Math.PI / 2, 0, 0]} />
+          <meshStandardMaterial color="#1a1a1a" />
+        </mesh>
+        <mesh position={[1, 0, 1]}>
+          <cylinderGeometry args={[0.4, 0.4, 0.3]} rotation={[Math.PI / 2, 0, 0]} />
+          <meshStandardMaterial color="#1a1a1a" />
+        </mesh>
+        <mesh position={[-1, 0, -1]}>
+          <cylinderGeometry args={[0.4, 0.4, 0.3]} rotation={[Math.PI / 2, 0, 0]} />
+          <meshStandardMaterial color="#1a1a1a" />
+        </mesh>
+        <mesh position={[1, 0, -1]}>
+          <cylinderGeometry args={[0.4, 0.4, 0.3]} rotation={[Math.PI / 2, 0, 0]} />
+          <meshStandardMaterial color="#1a1a1a" />
+        </mesh>
+      </group>
+    </mesh>
   )
 }
 
-export default Vehicles
+export default Vehicle
