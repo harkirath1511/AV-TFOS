@@ -21,10 +21,10 @@ cd Tfos
 go mod tidy
 
 # Install Go dependencies
-go get github.com/nats-io/nats.go
-go get github.com/redis/go-redis/v9
-go get github.com/gin-gonic/gin
-go get github.com/gorilla/websocket
+go get github.com/nats-io/nats.go@latest
+go get github.com/redis/go-redis/v9@latest
+go get github.com/gin-gonic/gin@latest
+go get github.com/gorilla/websocket@latest
 ```
 
 ## Run the Backend
