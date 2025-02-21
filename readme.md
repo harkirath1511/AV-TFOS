@@ -59,3 +59,13 @@ go get github.com/gorilla/websocket
 # From the Tfos directory
 go run main.go
 ```
+
+# Verify Services
+
+```bash
+# Test simulation start
+curl -X POST http://localhost:8080/simulation/start
+
+# Test metrics endpoint
+curl http://localhost:8080/metrics
+```
