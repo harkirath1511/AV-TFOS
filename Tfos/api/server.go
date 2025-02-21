@@ -90,12 +90,32 @@ func (s *Server) handleWebSocket(c *gin.Context) {
 }
 
 func (s *Server) startSimulation(c *gin.Context) {
-	// Start simulation logic
-	s.nc.Publish("simulation.control", []byte(`{"action":"start"}`))
-	c.JSON(200, gin.H{"status": "simulation_started"})
+	type simulationConfig struct {
+		VehicleCount      int     `json:"vehicle_count"`
+		AVPercentage      float64 `json:"av_percentage"`
+		EmergencyInterval string  `json:"emergency_interval"`
+		UpdateFrequency   string  `json:"update_freq"`
+	}
+
+	var config simulationConfig
+
+	// Try to parse the JSON body, use defaults if not provided
+	if err := c.BindJSON(&config); err != nil {
+		log.Printf("Using default simulation config: %v", err)
+		config = simulationConfig{
+			VehicleCount:      500,
+			AVPercentage:      0.2,
+			EmergencyInterval: "10m",
+			UpdateFrequency:   "1s",
+		}
+	}
+
+	data, _ := json.Marshal(config)
+	log.Printf("Starting simulation with config: %s", string(data))
+	s.nc.Publish("simulation.control", data)
+	c.JSON(200, gin.H{"status": "simulation_started", "config": config})
 }
 
-// Replace the existing handleEmergency function with this updated version
 func (s *Server) handleEmergency(c *gin.Context) {
 	var req struct {
 		Route [][2]float64 `json:"route"`
