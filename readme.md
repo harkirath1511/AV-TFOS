@@ -1,20 +1,23 @@
 # AV-TFOS
 
-# Prerequisites Installation
+## Prerequisites Installation
 
 ```bash
 # Install Redis Server
 winget install Redis
 
-# Install NATS Server
-winget install nats-io.nats-server
+# Install NATS Server (Windows)
+# 1. Download the latest NATS server release from:
+# https://github.com/nats-io/nats-server/releases
+# Download the Windows zip file (nats-server-vX.X.X-windows-amd64.zip)
 
-# Clone the repository (if not done already)
-git clone <your-repo-url>
-cd AV-TFOS
+# 2. Extract the zip file
+# 3. Add the extracted folder location to your PATH environment variable
+# 4. Verify installation
+nats-server --version
 ```
 
-#  Start Required Services
+## Start Required Services
 
 ```bash
 # Start Redis Server (in a new terminal)
@@ -24,7 +27,7 @@ redis-server
 nats-server
 ```
 
-# Initialize Redis with Sample Data
+## Initialize Redis with Sample Data
 
 ```bash
 # Open Redis CLI
@@ -36,7 +39,7 @@ redis-cli
 > HSET intersection:intersection_001 current_phase north_south emergency_active false
 ```
 
-# Setup Go Backend
+## Setup Go Backend
 
 ```bash
 # Navigate to project directory
@@ -53,14 +56,14 @@ go get github.com/gin-gonic/gin
 go get github.com/gorilla/websocket
 ```
 
-# Run the Backend
+## Run the Backend
 
 ```bash
 # From the Tfos directory
 go run main.go
 ```
 
-# Verify Services
+## Verify Services
 
 ```bash
 # Test simulation start
@@ -69,3 +72,7 @@ curl -X POST http://localhost:8080/simulation/start
 # Test metrics endpoint
 curl http://localhost:8080/metrics
 ```
+
+The backend server will be available at:
+- WebSocket: `ws://localhost:8080/ws`
+- REST API: `http://localhost:8080`
