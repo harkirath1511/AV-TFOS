@@ -22,6 +22,7 @@ func main() {
 	nats.Initialize()
 	traffic.InitializeOptimizer(ctx)
 	apiServer := api.NewServer()
+	defer apiServer.Cleanup()
 
 	// Start services
 	go nats.StartAVIngest(ctx)
@@ -35,5 +36,5 @@ func main() {
 	<-sigChan
 	log.Println("Shutting down...")
 	cancel()
-	time.Sleep(2 * time.Second) // Allow cleanup
+	time.Sleep(2 * time.Second) 
 }

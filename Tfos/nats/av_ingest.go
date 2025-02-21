@@ -6,15 +6,25 @@ import (
 	"encoding/json"
 	"log"
 	"time"
+	"flowsync-backend/traffic"
 
 	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
 )
 
+type AVTelemetry struct {
+	VehicleID      string     `json:"vehicle_id"`
+	Position       [2]float64 `json:"position"` // [latitude, longitude]
+	Speed          float64    `json:"speed"`    // in km/h
+	Intent         string     `json:"intent"`   // e.g., "turn_left", "maintain_lane"
+	IntersectionID string     `json:"intersection_id"`
+	Timestamp      int64      `json:"timestamp"`
+}
+
 var (
-	nc      *nats.Conn
-	js      nats.JetStreamContext
-	rdb     = redis.NewClient(&redis.Options{Addr: "localhost:6379"})
+	nc                 *nats.Conn
+	js                 nats.JetStreamContext
+	rdb                = redis.NewClient(&redis.Options{Addr: "localhost:6379"})
 	vehiclePositionTTL = 5 * time.Minute
 )
 
@@ -35,8 +45,8 @@ func Initialize() {
 
 func configureStreams() {
 	js.AddStream(&nats.StreamConfig{
-		Name:     "TRAFFIC",
-		Subjects: []string{"av.telemetry.*", "emergency.*"},
+		Name:      "TRAFFIC",
+		Subjects:  []string{"av.telemetry.*", "emergency.*"},
 		Retention: nats.InterestPolicy,
 	})
 }
